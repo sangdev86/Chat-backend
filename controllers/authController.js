@@ -6,9 +6,11 @@ const config = require("../config/app");
 exports.login = async (req, res) => {
 	const { email, password } = req.body;
 	try {
+		//crypto password
 		const secret = require("crypto")
 			.randomBytes(64)
 			.toString("hex");
+
 		// find the user
 		const user = await User.findOne({
 			where: {
