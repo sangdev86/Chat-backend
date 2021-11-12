@@ -25,6 +25,11 @@ exports.index = async (req, res) => {
 					},
 					{
 						model: Message,
+						include: [
+							{
+								model: User,
+							},
+						],
 						limit: 20,
 						order: [["id", "DESC"]],
 					},
@@ -40,6 +45,7 @@ exports.create = async (req, res) => {
 
 	const t = await sequelize.transaction();
 
+	console.log("req.user", req.user);
 	try {
 		const user = await User.findOne({
 			where: {
@@ -69,10 +75,7 @@ exports.create = async (req, res) => {
 				message: "Chat with this user already exists",
 			});
 
-		const chat = await Chat.create(
-			{ type: "dual" },
-			{ transaction: t }
-		);
+		const chat = await Chat.create({ type: "dual" }, { transaction: t });
 
 		await ChatUser.bulkCreate(
 			[
@@ -98,7 +101,7 @@ exports.create = async (req, res) => {
 					model: User,
 					where: {
 						[Op.not]: {
-							id: req.user.id,
+							id: req.user.id, // parnerID
 						},
 					},
 				},
@@ -126,13 +129,17 @@ exports.messages = async (req, res) => {
 		where: {
 			chatId: req.query.id,
 		},
+		include: [
+			{
+				model: User,
+			},
+		],
 		limit,
 		offset,
 	});
 
 	const totalPages = Math.ceil(messages.count / limit);
-	if (page > totalPages)
-		return res.json({ data: { message: [] } });
+	if (page > totalPages) return res.json({ data: { message: [] } });
 
 	const result = {
 		message: messages.rows,
@@ -156,8 +163,6 @@ exports.deleteChat = async (req, res) => {
 			message: "Chat deleted successfully",
 		});
 	} catch (e) {
-		return res
-			.status(500)
-			.json({ status: "Error", message: e.message });
+		return res.status(500).json({ status: "Error", message: e.message });
 	}
 };
