@@ -75,7 +75,10 @@ exports.create = async (req, res) => {
 				message: "Chat with this user already exists",
 			});
 
-		const chat = await Chat.create({ type: "dual" }, { transaction: t });
+		const chat = await Chat.create(
+			{ type: "dual" },
+			{ transaction: t }
+		);
 
 		await ChatUser.bulkCreate(
 			[
@@ -139,7 +142,8 @@ exports.messages = async (req, res) => {
 	});
 
 	const totalPages = Math.ceil(messages.count / limit);
-	if (page > totalPages) return res.json({ data: { message: [] } });
+	if (page > totalPages)
+		return res.json({ data: { message: [] } });
 
 	const result = {
 		message: messages.rows,
@@ -151,6 +155,13 @@ exports.messages = async (req, res) => {
 	return res.json(result);
 };
 
+exports.imageUpload = (req, res) => {
+	if (req.file) {
+		return res.json({ url: req.file.filename });
+	}
+
+	return res.status(500).json("No image uploaded");
+};
 exports.deleteChat = async (req, res) => {
 	try {
 		await Chat.destroy({
@@ -163,6 +174,8 @@ exports.deleteChat = async (req, res) => {
 			message: "Chat deleted successfully",
 		});
 	} catch (e) {
-		return res.status(500).json({ status: "Error", message: e.message });
+		return res
+			.status(500)
+			.json({ status: "Error", message: e.message });
 	}
 };

@@ -88,9 +88,10 @@ const SocketServer = (server) => {
 
 				const saveMessage = await Message.create(msg);
 
-				message.id = saveMessage.id;
 				message.User = message.fromUser;
 				message.fromUserId = message.fromUser.id;
+				message.id = saveMessage.id;
+				message.message = saveMessage.message;
 				delete message.fromUser;
 
 				sockets.forEach((socket) => {
@@ -130,6 +131,18 @@ const SocketServer = (server) => {
 					users.delete(user.id);
 				}
 			}
+		});
+
+		// ** SEND TYPING
+		socket.on("sendTyping", (typing) => {
+			// console.log("typing=====================", typing);
+			typing.toUserId.forEach((id) => {
+				if (users.has(id)) {
+					users.get(id).sockets.forEach((socket) => {
+						io.to(socket).emit("typing", typing);
+					});
+				}
+			});
 		});
 	});
 };
