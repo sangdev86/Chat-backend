@@ -139,6 +139,7 @@ exports.messages = async (req, res) => {
 		],
 		limit,
 		offset,
+		order: [["id", "DESC"]],
 	});
 
 	const totalPages = Math.ceil(messages.count / limit);
@@ -146,7 +147,7 @@ exports.messages = async (req, res) => {
 		return res.json({ data: { message: [] } });
 
 	const result = {
-		message: messages.rows,
+		messages: messages.rows,
 		pagination: {
 			page,
 			totalPages,
